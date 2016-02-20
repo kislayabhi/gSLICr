@@ -16,7 +16,6 @@ using namespace cv;
 void load_image(const Mat& inimg, gSLICr::UChar4Image* outimg)
 {
 	gSLICr::Vector4u* outimg_ptr = outimg->GetData(MEMORYDEVICE_CPU);
-
 	for (int y = 0; y < outimg->noDims.y;y++)
 		for (int x = 0; x < outimg->noDims.x; x++)
 		{
@@ -30,7 +29,6 @@ void load_image(const Mat& inimg, gSLICr::UChar4Image* outimg)
 void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 {
 	const gSLICr::Vector4u* inimg_ptr = inimg->GetData(MEMORYDEVICE_CPU);
-
 	for (int y = 0; y < inimg->noDims.y; y++)
 		for (int x = 0; x < inimg->noDims.x; x++)
 		{
@@ -44,6 +42,7 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 
 int main(int argc, char **argv)
 {
+<<<<<<< HEAD
 	// VideoCapture cap(argv[1]);
 	VideoCapture cap("../frames/frames_compressed/1%03d.jpg");
 
@@ -52,8 +51,6 @@ int main(int argc, char **argv)
 		cerr << "unable to open camera!\n";
 		return -1;
 	}
-	
-
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
 	my_settings.img_size.x = 1920;
@@ -67,32 +64,31 @@ int main(int argc, char **argv)
 	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
 
 	// instantiate a core_engine
+	// This controls the segmentation code in the seg_engine class and times the result.
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
 
-	// gSLICr takes gSLICr::UChar4Image as input and out put
+	// gSLICr takes gSLICr::UChar4Image as input and output
 	gSLICr::UChar4Image* in_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
 	gSLICr::UChar4Image* out_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
 
 	Size s(my_settings.img_size.x, my_settings.img_size.y);
 	Mat oldFrame, frame;
 	Mat boundry_draw_frame; boundry_draw_frame.create(s, CV_8UC3);
+	StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
 
-    StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
-    
 	int key; int save_count = 0;
 	while (cap.read(oldFrame))
 	{
 		resize(oldFrame, frame, s);
-		
 		load_image(frame, in_img);
-        
-        sdkResetTimer(&my_timer); sdkStartTimer(&my_timer);
+
+        	sdkResetTimer(&my_timer);
+		sdkStartTimer(&my_timer);
 		gSLICr_engine->Process_Frame(in_img);
-        sdkStopTimer(&my_timer); 
-        cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
-        
+		sdkStopTimer(&my_timer);
+        	cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
 		gSLICr_engine->Draw_Segmentation_Result(out_img);
-		
+
 		load_image(out_img, boundry_draw_frame);
 		imshow("segmentation", boundry_draw_frame);
 
@@ -111,7 +107,6 @@ int main(int argc, char **argv)
 			save_count++;
 		}
 	}
-
 	destroyAllWindows();
     return 0;
 }
