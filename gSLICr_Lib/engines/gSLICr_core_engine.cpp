@@ -31,11 +31,6 @@ void gSLICr::engines::core_engine::Process_Frame(UChar4Image* in_img, int frame_
 	provided as the input.
 	*/
 	slic_seg_engine->Perform_Segmentation(in_img, frame_number);
-	if(slic_seg_engine->Is_Spixelmap_Present())
-		cout<<"\n spixel info persists \n"<<endl;
-	else
-		cout<<"\n spixel info doesn't persists \n"<<endl;
-
 }
 
 const IntImage * gSLICr::engines::core_engine::Get_Seg_Res()
