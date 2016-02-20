@@ -10,8 +10,6 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/opencv.hpp"
 
-
-
 using namespace std;
 using namespace cv;
 
@@ -44,9 +42,10 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 }
 
 
-int main()
+int main(int argc, char **argv)
 {
-	VideoCapture cap(0);
+	// VideoCapture cap(argv[1]);
+	VideoCapture cap("../frames/frames_compressed/1%03d.jpg");
 
 	if (!cap.isOpened()) 
 	{
@@ -57,10 +56,10 @@ int main()
 
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
-	my_settings.img_size.x = 640;
-	my_settings.img_size.y = 480;
+	my_settings.img_size.x = 1920;
+	my_settings.img_size.y = 1080;
 	my_settings.no_segs = 2000;
-	my_settings.spixel_size = 16;
+	my_settings.spixel_size = 50 ;
 	my_settings.coh_weight = 0.6f;
 	my_settings.no_iters = 5;
 	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
