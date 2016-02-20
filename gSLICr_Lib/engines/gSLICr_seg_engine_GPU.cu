@@ -136,7 +136,6 @@ void gSLICr::engines::seg_engine_GPU::Init_Cluster_Centers()
 	Vector4f* img_ptr = cvt_img->GetData(MEMORYDEVICE_CUDA);
 
 	Vector2i map_size = spixel_map->noDims;
-	cout<<"\n"<<map_size.x<<"\t"<<map_size.y<<endl;
 	Vector2i img_size = cvt_img->noDims;
 
 	dim3 blockSize(BLOCK_DIM, BLOCK_DIM);
@@ -175,7 +174,7 @@ void gSLICr::engines::seg_engine_GPU::Update_Cluster_Center()
 	dim3 blockSize(BLOCK_DIM, BLOCK_DIM);
 	dim3 gridSize(map_size.x, map_size.y, no_grid_per_center);
 
-	Update_Cluster	_Center_device<<<gridSize,blockSize>>>(img_ptr, idx_ptr, accum_map_ptr, map_size, img_size, spixel_size, no_blocks_per_line);
+	Update_Cluster_Center_device<<<gridSize,blockSize>>>(img_ptr, idx_ptr, accum_map_ptr, map_size, img_size, spixel_size, no_blocks_per_line);
 
 	dim3 gridSize2(map_size.x, map_size.y);
 

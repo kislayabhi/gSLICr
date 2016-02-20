@@ -42,7 +42,7 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 
 int main(int argc, char **argv)
 {
-<<<<<<< HEAD
+
 	// VideoCapture cap(argv[1]);
 	VideoCapture cap("../frames/frames_compressed/1%03d.jpg");
 
