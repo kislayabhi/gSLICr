@@ -234,7 +234,11 @@ __global__ void Draw_Segmentation_Result_device(const int* idx_img, Vector4u* so
 	draw_superpixel_boundry_shared(idx_img, sourceimg, outimg, img_size, x, y);
 }
 
-__global__ void Init_Cluster_Centers_device(const Vector4f* inimg, spixel_info* out_spixel, Vector2i map_size, Vector2i img_size, int spixel_size)
+__global__ void Init_Cluster_Centers_device(const Vector4f* inimg,
+						spixel_info* out_spixel,
+						Vector2i map_size,
+						Vector2i img_size,
+						int spixel_size)
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 	if (x > map_size.x - 1 || y > map_size.y - 1) return;
@@ -242,7 +246,15 @@ __global__ void Init_Cluster_Centers_device(const Vector4f* inimg, spixel_info* 
 	init_cluster_centers_shared(inimg, out_spixel, map_size, img_size, spixel_size, x, y);
 }
 
-__global__ void Find_Center_Association_device(const Vector4f* inimg, const spixel_info* in_spixel_map, int* out_idx_img, Vector2i map_size, Vector2i img_size, int spixel_size, float weight, float max_xy_dist, float max_color_dist)
+__global__ void Find_Center_Association_device(	const Vector4f* inimg,
+						const spixel_info* in_spixel_map,
+						int* out_idx_img,
+						Vector2i map_size,
+						Vector2i img_size,
+						int spixel_size,
+						float weight,
+						float max_xy_dist,
+						float max_color_dist )
 {
 	int x = threadIdx.x + blockIdx.x * blockDim.x, y = threadIdx.y + blockIdx.y * blockDim.y;
 	if (x > img_size.x - 1 || y > img_size.y - 1) return;

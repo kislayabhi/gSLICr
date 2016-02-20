@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 	// VideoCapture cap(argv[1]);
 	VideoCapture cap("../frames/frames_compressed/1%03d.jpg");
 
-	if (!cap.isOpened()) 
+	if (!cap.isOpened())
 	{
 		cerr << "unable to open camera!\n";
 		return -1;
@@ -63,8 +63,7 @@ int main(int argc, char **argv)
 	my_settings.seg_method = gSLICr::GIVEN_SIZE; // or gSLICr::GIVEN_NUM for given number
 	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
 
-	// instantiate a core_engine
-	// This controls the segmentation code in the seg_engine class and times the result.
+	// Instantiate a core_engine with the settings specified by us above.
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
 
 	// gSLICr takes gSLICr::UChar4Image as input and output
@@ -84,6 +83,9 @@ int main(int argc, char **argv)
 
         	sdkResetTimer(&my_timer);
 		sdkStartTimer(&my_timer);
+
+		/* This process takes the whole time. Main processing code.
+		   in_image is a pointer to UChar4Image */
 		gSLICr_engine->Process_Frame(in_img);
 		sdkStopTimer(&my_timer);
         	cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;

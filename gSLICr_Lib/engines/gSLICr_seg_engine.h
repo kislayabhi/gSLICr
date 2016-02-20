@@ -46,7 +46,13 @@ namespace gSLICr
 
 			void Perform_Segmentation(UChar4Image* in_img);
 			virtual void Draw_Segmentation_Result(UChar4Image* out_img){};
+
+			bool Is_Spixelmap_Present() {
+				if(spixel_map != NULL)
+					return true;
+				else
+					return false;
+			};
 		};
 	}
 }
-
