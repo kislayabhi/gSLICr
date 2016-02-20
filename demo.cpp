@@ -53,8 +53,8 @@ int main(int argc, char **argv)
 	}
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
-	my_settings.img_size.x = 1920;
-	my_settings.img_size.y = 1080;
+	my_settings.img_size.x = 640;
+	my_settings.img_size.y = 480;
 	my_settings.no_segs = 2000;
 	my_settings.spixel_size = 50 ;
 	my_settings.coh_weight = 0.6f;
