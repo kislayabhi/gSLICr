@@ -24,13 +24,13 @@ gSLICr::engines::core_engine::~core_engine()
 		delete slic_seg_engine;
 }
 
-void gSLICr::engines::core_engine::Process_Frame(UChar4Image* in_img)
+void gSLICr::engines::core_engine::Process_Frame(UChar4Image* in_img, int frame_number)
 {
 	/* The private variable that we intialized at the time of constructor
 	calling is now used to perform segmentation on the in_image which is
 	provided as the input.
 	*/
-	slic_seg_engine->Perform_Segmentation(in_img);
+	slic_seg_engine->Perform_Segmentation(in_img, frame_number);
 	if(slic_seg_engine->Is_Spixelmap_Present())
 		cout<<"\n spixel info persists \n"<<endl;
 	else

@@ -76,6 +76,7 @@ int main(int argc, char **argv)
 	StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
 
 	int key; int save_count = 0;
+	int frame_number = 0;
 	while (cap.read(oldFrame))
 	{
 		resize(oldFrame, frame, s);
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
 
 		/* This process takes the whole time. Main processing code.
 		   in_image is a pointer to UChar4Image */
-		gSLICr_engine->Process_Frame(in_img);
+		gSLICr_engine->Process_Frame(in_img, frame_number);
 		sdkStopTimer(&my_timer);
         	cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
 		gSLICr_engine->Draw_Segmentation_Result(out_img);
@@ -108,6 +109,8 @@ int main(int argc, char **argv)
 			printf("\nsaved segmentation %04i\n", save_count);
 			save_count++;
 		}
+
+		frame_number++;
 	}
 	destroyAllWindows();
     return 0;

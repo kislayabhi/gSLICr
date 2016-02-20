@@ -23,12 +23,13 @@ seg_engine::~seg_engine()
 	if (spixel_map != NULL) delete spixel_map;
 }
 
-void seg_engine::Perform_Segmentation(UChar4Image* in_img)
+void seg_engine::Perform_Segmentation(UChar4Image* in_img, int frame_number)
 {
 	source_img->SetFrom(in_img, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CUDA);
 	Cvt_Img_Space(source_img, cvt_img, gSLICr_settings.color_space);
 
-	Init_Cluster_Centers();
+	if(frame_number == 0)
+		Init_Cluster_Centers();
 	Find_Center_Association();
 
 	for (int i = 0; i < gSLICr_settings.no_iters; i++)
@@ -40,6 +41,3 @@ void seg_engine::Perform_Segmentation(UChar4Image* in_img)
 	if(gSLICr_settings.do_enforce_connectivity) Enforce_Connectivity();
 	cudaThreadSynchronize();
 }
-
-
-

@@ -44,7 +44,7 @@ namespace gSLICr
 				return idx_img;
 			};
 
-			void Perform_Segmentation(UChar4Image* in_img);
+			void Perform_Segmentation(UChar4Image* in_img, int frame_number);
 			virtual void Draw_Segmentation_Result(UChar4Image* out_img){};
 
 			bool Is_Spixelmap_Present() {
