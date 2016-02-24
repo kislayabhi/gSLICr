@@ -8,11 +8,13 @@
 using namespace gSLICr;
 using namespace std;
 
-/* The constructor intializes the private variable of this class core_engine
-with a new object of the class seg_engine_GPU. Woah! This is really weird!
-This is just like:
-		Parent_class variable = new Child_class
-		seg_engine* slic_seg_engine = new seg_engine_GPU();
+/*
+	The core engine class is nothing but a wrapper to a slic_seg_engine
+	variable(kept as a private member).
+	The main function of this wrapper class is via the Process_Frame fucntion
+	which initiates the Perform_Segmentation() function for the slic_seg_engine
+	private variable.
+	seg_engine* slic_seg_engine = new seg_engine_GPU();
 */
 gSLICr::engines::core_engine::core_engine(const objects::settings& in_settings)
 {

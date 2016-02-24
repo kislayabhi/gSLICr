@@ -63,6 +63,7 @@ __global__ void Draw_Segmentation_Result_device(const int* idx_img,
 //
 // ----------------------------------------------------
 
+// This is the constructor.
 seg_engine_GPU::seg_engine_GPU(const settings& in_settings) : seg_engine(in_settings)
 {
 	source_img = new UChar4Image(in_settings.img_size,true,true);
@@ -158,7 +159,10 @@ void gSLICr::engines::seg_engine_GPU::Find_Center_Association()
 
 	Find_Center_Association_device << <gridSize, blockSize >> >(img_ptr, spixel_list, idx_ptr, map_size, img_size, spixel_size, gSLICr_settings.coh_weight,max_xy_dist,max_color_dist);
 }
-
+/*
+	In this we must be having some measure of the distance using which we
+	update the cluster centres
+*/
 void gSLICr::engines::seg_engine_GPU::Update_Cluster_Center()
 {
 	spixel_info* accum_map_ptr = accum_map->GetData(MEMORYDEVICE_CUDA);
@@ -174,6 +178,9 @@ void gSLICr::engines::seg_engine_GPU::Update_Cluster_Center()
 	dim3 blockSize(BLOCK_DIM, BLOCK_DIM);
 	dim3 gridSize(map_size.x, map_size.y, no_grid_per_center);
 
+	/* This code is being distributed to all the different cores of the
+	Jetson. After this is done, the spixel_list_ptr should point to the
+	array of the spixel_info array. We can see the results here, I think*/
 	Update_Cluster_Center_device<<<gridSize,blockSize>>>(img_ptr, idx_ptr, accum_map_ptr, map_size, img_size, spixel_size, no_blocks_per_line);
 
 	dim3 gridSize2(map_size.x, map_size.y);
@@ -262,7 +269,15 @@ __global__ void Find_Center_Association_device(	const Vector4f* inimg,
 	find_center_association_shared(inimg, in_spixel_map, out_idx_img, map_size, img_size, spixel_size, weight, x, y,max_xy_dist,max_color_dist);
 }
 
-__global__ void Update_Cluster_Center_device(const Vector4f* inimg, const int* in_idx_img, spixel_info* accum_map, Vector2i map_size, Vector2i img_size, int spixel_size, int no_blocks_per_line)
+/* Find how are the centres stored in the library */
+/* This looks interesting: spixel_info* spixel_list */
+__global__ void Update_Cluster_Center_device(const Vector4f* inimg,
+						const int* in_idx_img,
+						spixel_info* accum_map,
+						Vector2i map_size,
+						Vector2i img_size,
+						int spixel_size,
+						int no_blocks_per_line)
 {
 	int local_id = threadIdx.y * blockDim.x + threadIdx.x;
 
