@@ -2,6 +2,7 @@
 
 #include "gSLICr_seg_engine_GPU.h"
 #include "gSLICr_seg_engine_shared.h"
+#include<iostream>
 
 using namespace std;
 using namespace gSLICr;
@@ -186,6 +187,7 @@ void gSLICr::engines::seg_engine_GPU::Update_Cluster_Center()
 	dim3 gridSize2(map_size.x, map_size.y);
 
 	Finalize_Reduction_Result_device<<<gridSize2,blockSize>>>(accum_map_ptr, spixel_list_ptr, map_size, no_grid_per_center);
+	//cout<<"\n\t"<<spixel_list_ptr[0].no_pixels<<endl;
 }
 
 void gSLICr::engines::seg_engine_GPU::Enforce_Connectivity()

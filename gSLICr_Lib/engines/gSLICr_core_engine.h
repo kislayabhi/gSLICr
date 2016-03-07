@@ -4,13 +4,13 @@
 
 namespace gSLICr {
 	namespace engines {
-		class core_engine {
-			private:
-				seg_engine* slic_seg_engine;
+		class core_engine {	
 			public:
 				core_engine(const objects::settings& in_settings);
 				~core_engine();
-
+				
+				seg_engine* slic_seg_engine;
+				
 				// Function to segment in_img
 				void Process_Frame(UChar4Image* in_img, int frame_number);
 

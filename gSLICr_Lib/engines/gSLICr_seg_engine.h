@@ -22,8 +22,6 @@ namespace gSLICr
 			Float4Image *cvt_img;
 			IntImage *idx_img;
 
-			// superpixel map
-			SpixelMap* spixel_map;
 			int spixel_size;
 
 			objects::settings gSLICr_settings;
@@ -35,6 +33,8 @@ namespace gSLICr
 			virtual void Enforce_Connectivity() = 0;
 
 		public:
+			// superpixel map
+			SpixelMap* spixel_map;
 
 			seg_engine(const objects::settings& in_settings );
 			virtual ~seg_engine();

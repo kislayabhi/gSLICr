@@ -3,6 +3,7 @@
 #pragma once
 #include "../gSLICr_defines.h"
 #include "../objects/gSLICr_spixel_info.h"
+#include<iostream>
 
 _CPU_AND_GPU_CODE_ inline void rgb2xyz(const gSLICr::Vector4u& pix_in, gSLICr::Vector4f& pix_out)
 {
@@ -178,6 +179,8 @@ _CPU_AND_GPU_CODE_ inline void finalize_reduction_result_shared(const gSLICr::ob
 		spixel_list[spixel_idx].center /= (float)spixel_list[spixel_idx].no_pixels;
 		spixel_list[spixel_idx].color_info /= (float)spixel_list[spixel_idx].no_pixels;
 	}
+
+	//std::cout<<"\n\t"<<spixel_list[spixel_idx].no_pixels<<std::endl;
 }
 
 _CPU_AND_GPU_CODE_ inline void supress_local_lable(const int* in_idx_img, int* out_idx_img, gSLICr::Vector2i img_size, int x, int y)

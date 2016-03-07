@@ -42,9 +42,8 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 
 int main(int argc, char **argv)
 {
-
 	// VideoCapture cap(argv[1]);
-	VideoCapture cap("../frames/frames_compressed/1%03d.jpg");
+	VideoCapture cap("../frames/frames_compressed/plots/1%03d.jpg");
 
 	if (!cap.isOpened())
 	{
@@ -56,7 +55,7 @@ int main(int argc, char **argv)
 	my_settings.img_size.x = 640;
 	my_settings.img_size.y = 480;
 	my_settings.no_segs = 2000;
-	my_settings.spixel_size = 50 ;
+	my_settings.spixel_size = 20 ;
 	my_settings.coh_weight = 0.6f;
 	my_settings.no_iters = 5;
 	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
@@ -77,19 +76,27 @@ int main(int argc, char **argv)
 
 	int key; int save_count = 0;
 	int frame_number = 0;
+	float sum = 0;
 	while (cap.read(oldFrame))
 	{
 		resize(oldFrame, frame, s);
 		load_image(frame, in_img);
 
-        	sdkResetTimer(&my_timer);
+        sdkResetTimer(&my_timer);
 		sdkStartTimer(&my_timer);
 
 		/* This process takes the whole time. Main processing code.
 		   in_image is a pointer to UChar4Image */
 		gSLICr_engine->Process_Frame(in_img, frame_number);
 		sdkStopTimer(&my_timer);
-        	cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
+        	
+		cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
+		sum+=sdkGetTimerValue(&my_timer);
+		
+		//gSLICr_engine->slic_seg_engine->spixel_map->UpdateHostFromDevice();
+		//gSLICr::objects::spixel_info *aha = gSLICr_engine->slic_seg_engine->spixel_map->GetData(MEMORYDEVICE_CPU) ;
+		//cout<<(aha+1)->center<<endl;	
+
 		gSLICr_engine->Draw_Segmentation_Result(out_img);
 
 		load_image(out_img, boundry_draw_frame);
@@ -111,7 +118,9 @@ int main(int argc, char **argv)
 		}
 
 		frame_number++;
+		cout<<"\t Frame Number: "<<frame_number<<"\n"<<endl;
 	}
+	cout<<"\t Average Per Frame: "<<sum/frame_number<<"\n"<<endl;
 	destroyAllWindows();
     return 0;
 }
