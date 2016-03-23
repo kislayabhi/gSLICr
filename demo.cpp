@@ -2,7 +2,7 @@
 
 #include <time.h>
 #include <stdio.h>
-
+#include <algorithm>
 #include "gSLICr_Lib/gSLICr.h"
 #include "NVTimer.h"
 
@@ -39,11 +39,95 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 		}
 }
 
+struct bgr {
+	float b;
+	float g;
+	float r;
+	bgr(){
+		b=0;
+		g=0;
+		r=0;
+	}
+};
+
+struct apple_info_t {
+	int spxl_len[768];
+	bgr bgr_arr[768];
+	apple_info_t(){
+		for(int i = 0; i < 768; i++) {
+			spxl_len[i]=0;
+			bgr_arr[i].b=bgr_arr[i].g=bgr_arr[i].r=0;
+		}
+	}
+};
+
+/*TODO: Feed Pravakar's code here*/
+vector<int> getRedApples_sprpxls(apple_info_t* apple_info) {
+	vector<int> qualified_sprpxls;
+	/*TODO For all the super pixel find those that qualifies for the job*/
+	for(int i = 0; i < 768; i++) {
+		
+		int red = apple_info->bgr_arr[i].r;
+		int green = apple_info->bgr_arr[i].g;
+		int blue = apple_info->bgr_arr[i].b;
+		
+		int min = 2000;
+		int max = -1;	
+		
+		if(green >= red && green >=blue)
+			max = green;
+		else if(blue>=red)
+			max = blue;
+		else
+			max = red;
+
+		if(red <= blue && blue <= green)
+			min = red;
+		else if(blue<=green)
+			min = blue;
+		else
+			min = green;
+
+
+		if(max==red) {
+
+			/* For the dark red apples */
+		
+			//bool cond1 = ((red - blue < 35 || red - green < 35) && red > 200) || red - blue < 20 || red - green < 20 || red + green + blue > 680;
+			//bool cond1 = ((red - blue < 35 || red - green < 35) && red > 100) || red - blue < 20 || red - green < 20 || red + green + blue > 680;
+			//if(!(((red - blue < 35 || red - green < 35 ) && red > 200) || red - blue < 20|| red - green < 20 || red + green + blue > 680))
+	 		//	if(!((green + blue > 270|| (green - blue < 40 && red - green < 50 && red > 79) ) && !cond1))
+			
+	
+			if(red-blue>15 || red-green>15)
+				qualified_sprpxls.push_back(i);
+			
+		
+		
+		
+			/* For the mixed green apples */
+			//if(!(red -green >35||green <blue||red -blue<20|| green -blue<20|| red+green+blue>680 ))
+			//	qualified_sprpxls.push_back(i);/*TODO: only push if it is not there*/
+
+	    }	
+		
+		/* For the mixed green apples */
+		
+		//if(max==green) {
+		//	if(!(green-red>15|| red<blue|| red+green +blue<270||red-blue<25||green -blue<25 || red+green+blue>680))
+		//		qualified_sprpxls.push_back(i);
+		//}
+	}
+	return qualified_sprpxls;
+}
+
+
 
 int main(int argc, char **argv)
 {
 	// VideoCapture cap(argv[1]);
-	VideoCapture cap("../frames/frames_compressed/plots/1%03d.jpg");
+	VideoCapture cap("../frames/frames_compressed/plots/p2/1%03d.jpg");
+	//VideoCapture cap("../frames/frames_compressed/VIRB0072.MP4");
 
 	if (!cap.isOpened())
 	{
@@ -54,7 +138,7 @@ int main(int argc, char **argv)
 	gSLICr::objects::settings my_settings;
 	my_settings.img_size.x = 640;
 	my_settings.img_size.y = 480;
-	my_settings.no_segs = 2000;
+	my_settings.no_segs = 500;
 	my_settings.spixel_size = 20 ;
 	my_settings.coh_weight = 0.6f;
 	my_settings.no_iters = 5;
@@ -72,13 +156,16 @@ int main(int argc, char **argv)
 	Size s(my_settings.img_size.x, my_settings.img_size.y);
 	Mat oldFrame, frame;
 	Mat boundry_draw_frame; boundry_draw_frame.create(s, CV_8UC3);
+	Mat apple_seg_mat_image; apple_seg_mat_image.create(s, CV_8UC3);
 	StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
 
 	int key; int save_count = 0;
 	int frame_number = 0;
 	float sum = 0;
+
 	while (cap.read(oldFrame))
 	{
+		apple_info_t apple_info;
 		resize(oldFrame, frame, s);
 		load_image(frame, in_img);
 
@@ -90,7 +177,7 @@ int main(int argc, char **argv)
 		gSLICr_engine->Process_Frame(in_img, frame_number);
 		sdkStopTimer(&my_timer);
         	
-		cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
+		//cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
 		sum+=sdkGetTimerValue(&my_timer);
 		
 		//gSLICr_engine->slic_seg_engine->spixel_map->UpdateHostFromDevice();
@@ -100,8 +187,72 @@ int main(int argc, char **argv)
 		gSLICr_engine->Draw_Segmentation_Result(out_img);
 
 		load_image(out_img, boundry_draw_frame);
-		imshow("segmentation", boundry_draw_frame);
+		imshow("superpixels", boundry_draw_frame);
+		//waitKey(0);
+		
+		gSLICr::IntImage* myIntImage_ptr = gSLICr_engine->slic_seg_engine->idx_img;
+		myIntImage_ptr->UpdateHostFromDevice();
+		int* int_ptr = myIntImage_ptr->GetData(MEMORYDEVICE_CPU);	
+		
+		int nodim_x = myIntImage_ptr->noDims.x;//width is x
+		int nodim_y = myIntImage_ptr->noDims.y;//height is y	
 
+		vector<int> int_vector(int_ptr, int_ptr+nodim_x*nodim_y-1);
+		//cout<<"max element: "<< *max_element(int_vector.begin(), int_vector.end())  <<endl;
+		
+			
+		
+		const gSLICr::Vector4u* in_img_ptr = in_img->GetData(MEMORYDEVICE_CPU);
+			
+
+		for(int i = 0; i < nodim_y*nodim_x; ++i){	
+			apple_info.bgr_arr[int_ptr[i]].b += in_img_ptr[i].b;
+			apple_info.bgr_arr[int_ptr[i]].g += in_img_ptr[i].g;
+			apple_info.bgr_arr[int_ptr[i]].r += in_img_ptr[i].r;
+			apple_info.spxl_len[int_ptr[i]]++;
+		}	
+	
+		for(int i = 0; i < 768; i++){
+			apple_info.bgr_arr[i].b /= apple_info.spxl_len[i];
+			apple_info.bgr_arr[i].g /= apple_info.spxl_len[i];
+			apple_info.bgr_arr[i].r /= apple_info.spxl_len[i];	
+			/* spxl[i]=(r, g, b)  */
+			//cout<<"\n spxl["<<i<<"]=("<<apple_info.bgr_arr[i].r<<", "<<apple_info.bgr_arr[i].g<<", "<<apple_info.bgr_arr[i].b<<")"<<endl;
+		}
+
+		
+
+		/* ids of the superpixels that qualifies for the job*/
+		vector<int> qualified_sprpxls = getRedApples_sprpxls(&apple_info); 
+		/*
+		for(int i = 0; i < qualified_sprpxls.size(); ++i) {
+			cout<<qualified_sprpxls[i]<<endl;
+		}
+		*/
+		/*create one clone of in_image and draw the required superpixel. basically blacken out everything else*/
+		gSLICr::UChar4Image* appleseg_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
+		load_image(frame, appleseg_img);	
+
+		gSLICr::Vector4u* appleseg_img_ptr = appleseg_img->GetData(MEMORYDEVICE_CPU);
+			
+		for(int i = 0; i < nodim_x*nodim_y; ++i) {
+			if(find(qualified_sprpxls.begin(), qualified_sprpxls.end(), int_ptr[i]) != qualified_sprpxls.end()) {
+				/*This pixel is qualified to be an apple. Do nothing for now */
+			}
+			else {
+				//This pixel is not qualified to be an apple. We can make it complete dark
+				appleseg_img_ptr[i].b = 0;
+				appleseg_img_ptr[i].g = 0;
+				appleseg_img_ptr[i].r = 0;
+			}
+		}
+
+		load_image(appleseg_img, apple_seg_mat_image);
+		imshow("apple  segmentation", apple_seg_mat_image);
+		waitKey(0);
+
+		cout<<"\n noDims: "<<myIntImage_ptr->noDims<<endl;
+		cout<<"\n int_ptr: "<<int_ptr[2000]<<endl;
 		key = waitKey(1);
 		if (key == 27) break;
 		else if (key == 's')
@@ -119,8 +270,9 @@ int main(int argc, char **argv)
 
 		frame_number++;
 		cout<<"\t Frame Number: "<<frame_number<<"\n"<<endl;
+		break; /*Just working on one image for the time being*/
 	}
 	cout<<"\t Average Per Frame: "<<sum/frame_number<<"\n"<<endl;
-	destroyAllWindows();
+	//destroyAllWindows();
     return 0;
 }

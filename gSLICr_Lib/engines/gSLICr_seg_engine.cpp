@@ -25,32 +25,33 @@ seg_engine::~seg_engine()
 
 void seg_engine::Perform_Segmentation(UChar4Image* in_img, int frame_number)
 {
+
 	source_img->SetFrom(in_img, ORUtils::MemoryBlock<Vector4u>::CPU_TO_CUDA);
 	Cvt_Img_Space(source_img, cvt_img, gSLICr_settings.color_space);
 
-	if(frame_number == 0)
+//	if(frame_number == 0)
 		Init_Cluster_Centers();
 	Find_Center_Association();
 
-
-		spixel_map->UpdateHostFromDevice();
-		spixel_info *aha = spixel_map->GetData(MEMORYDEVICE_CPU) ;
-		
-			for(int j=0; j<768; j++)
-			cout<<"\t spixel "<<j<<"--> "<<(aha+j)->center<<endl;
-			cout<<"--------------------------------------------------"<<endl;		
-
-
+	spixel_map->UpdateHostFromDevice();
+	spixel_info *aha = spixel_map->GetData(MEMORYDEVICE_CPU) ;
+/*		
+	for(int j=0; j<768; j++)
+	cout<<"\t spixel "<<j<<"--> "<<(aha+j)->center<<endl;
+	cout<<"--------------------------------------------------"<<endl;		
+*/
 	for (int i = 0; i < gSLICr_settings.no_iters; i++)
 	{
 		
 		Update_Cluster_Center();
 		Find_Center_Association();
+		/*
 		spixel_map->UpdateHostFromDevice();
 		aha = spixel_map->GetData(MEMORYDEVICE_CPU) ;
 		for(int j=0; j<768; j++)
 			cout<<"\t spixel "<<j<<"--> "<<(aha+j)->center<<endl;
-		cout<<"--------------------------------------------------"<<endl;	
+		cout<<"--------------------------------------------------"<<endl;
+		*/	
 	}
 
 	if(gSLICr_settings.do_enforce_connectivity) Enforce_Connectivity();

@@ -11,7 +11,7 @@ namespace gSLICr
 	{
 		class seg_engine
 		{
-		protected:
+		public:
 
 			// normalizing distances
 			float max_color_dist;
