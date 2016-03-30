@@ -13,6 +13,8 @@
 using namespace std;
 using namespace cv;
 
+int global_no_sprpxls;
+
 void load_image(const Mat& inimg, gSLICr::UChar4Image* outimg)
 {
 	gSLICr::Vector4u* outimg_ptr = outimg->GetData(MEMORYDEVICE_CPU);
@@ -51,10 +53,17 @@ struct bgr {
 };
 
 struct apple_info_t {
-	int spxl_len[768];
-	bgr bgr_arr[768];
+	/*TODO: Instead of a static array make it a dynamic one with the number of superpixels being calculated at the run time*/
+	/*int spxl_len[768];*/
+	int* spxl_len; 
+	/*bgr bgr_arr[768];*/
+	bgr* bgr_arr;
 	apple_info_t(){
-		for(int i = 0; i < 768; i++) {
+
+		
+		spxl_len = (int*)malloc(sizeof(int)*global_no_sprpxls);
+		bgr_arr = (bgr*)malloc(sizeof(bgr)*global_no_sprpxls);
+		for(int i = 0; i < global_no_sprpxls; i++) {
 			spxl_len[i]=0;
 			bgr_arr[i].b=bgr_arr[i].g=bgr_arr[i].r=0;
 		}
@@ -65,7 +74,7 @@ struct apple_info_t {
 vector<int> getRedApples_sprpxls(apple_info_t* apple_info) {
 	vector<int> qualified_sprpxls;
 	/*TODO For all the super pixel find those that qualifies for the job*/
-	for(int i = 0; i < 768; i++) {
+	for(int i = 0; i < global_no_sprpxls; i++) {
 		
 		int red = apple_info->bgr_arr[i].r;
 		int green = apple_info->bgr_arr[i].g;
@@ -99,7 +108,7 @@ vector<int> getRedApples_sprpxls(apple_info_t* apple_info) {
 	 		//	if(!((green + blue > 270|| (green - blue < 40 && red - green < 50 && red > 79) ) && !cond1))
 			
 	
-			if(red-blue>15 || red-green>15)
+			if(red-blue>15 && red-green>15)
 				qualified_sprpxls.push_back(i);
 			
 		
@@ -126,8 +135,11 @@ vector<int> getRedApples_sprpxls(apple_info_t* apple_info) {
 int main(int argc, char **argv)
 {
 	// VideoCapture cap(argv[1]);
-	VideoCapture cap("../frames/frames_compressed/plots/p2/1%03d.jpg");
+	//VideoCapture cap("../frames/frames_compressed/plots/p2/1%03d.jpg");
+	//VideoCapture cap("../frames/seg0.jpg");
 	//VideoCapture cap("../frames/frames_compressed/VIRB0072.MP4");
+	VideoCapture cap("../frames/apple_video_frames_100/600.jpg");
+
 
 	if (!cap.isOpened())
 	{
@@ -136,8 +148,8 @@ int main(int argc, char **argv)
 	}
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
-	my_settings.img_size.x = 640;
-	my_settings.img_size.y = 480;
+	my_settings.img_size.x = 800;
+	my_settings.img_size.y = 600;
 	my_settings.no_segs = 500;
 	my_settings.spixel_size = 20 ;
 	my_settings.coh_weight = 0.6f;
@@ -145,6 +157,11 @@ int main(int argc, char **argv)
 	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
 	my_settings.seg_method = gSLICr::GIVEN_SIZE; // or gSLICr::GIVEN_NUM for given number
 	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
+
+
+	// Find the value of the global_no_superpixles
+	global_no_sprpxls = (my_settings.img_size.x * my_settings.img_size.y)/(my_settings.spixel_size * my_settings.spixel_size);
+	cout<<"\n Total number of Superpixels: "<<global_no_sprpxls<<endl;
 
 	// Instantiate a core_engine with the settings specified by us above.
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
@@ -160,16 +177,21 @@ int main(int argc, char **argv)
 	StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
 
 	int key; int save_count = 0;
-	int frame_number = 0;
+	int frame_number = -1;
 	float sum = 0;
 
 	while (cap.read(oldFrame))
 	{
+		frame_number++;
+		//if(frame_number<1200)
+		//	continue;
+	
 		apple_info_t apple_info;
+
 		resize(oldFrame, frame, s);
 		load_image(frame, in_img);
 
-        sdkResetTimer(&my_timer);
+	        sdkResetTimer(&my_timer);
 		sdkStartTimer(&my_timer);
 
 		/* This process takes the whole time. Main processing code.
@@ -212,7 +234,7 @@ int main(int argc, char **argv)
 			apple_info.spxl_len[int_ptr[i]]++;
 		}	
 	
-		for(int i = 0; i < 768; i++){
+		for(int i = 0; i < global_no_sprpxls; i++){
 			apple_info.bgr_arr[i].b /= apple_info.spxl_len[i];
 			apple_info.bgr_arr[i].g /= apple_info.spxl_len[i];
 			apple_info.bgr_arr[i].r /= apple_info.spxl_len[i];	
@@ -268,9 +290,11 @@ int main(int argc, char **argv)
 			save_count++;
 		}
 
-		frame_number++;
+		//frame_number++;
 		cout<<"\t Frame Number: "<<frame_number<<"\n"<<endl;
-		break; /*Just working on one image for the time being*/
+		free(apple_info.spxl_len);
+		free(apple_info.bgr_arr);
+			
 	}
 	cout<<"\t Average Per Frame: "<<sum/frame_number<<"\n"<<endl;
 	//destroyAllWindows();
